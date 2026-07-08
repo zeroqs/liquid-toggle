@@ -1,0 +1,3 @@
+{
+  "buildCommand": "pnpm --filter @zeroqs/liquid-toggle build && next build"
+}
