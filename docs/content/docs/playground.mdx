@@ -1,0 +1,22 @@
+---
+title: Playground
+description: Tweak every config value live and copy the resulting config prop.
+---
+
+Drag the thumb, click the options, and tune the optics below. The JSON at the bottom is the exact `config` prop producing what you see — copy it straight into your code.
+
+<Playground />
+
+## What the knobs mean
+
+- **`glass.strength`** — maximum displacement at the rim, px. The master intensity knob; `0` turns refraction off entirely.
+- **`glass.bezelWidth`** — width of the refracted band along the rim. Displacement is zero at the inner edge of the band and reaches `strength` at the very rim, so a wider bezel pulls the smear deeper into the lens.
+- **`glass.cornerBoost`** — extra displacement on the rounded ends of the capsule. This is what makes content visibly bend along the lens curve; the flat top/bottom stays calm.
+- **`glass.cornerSpread`** — how far the boosted zone stretches along the arc. It's an exponent: `1` keeps the boost in a tight diagonal wedge, lower values run the bend along the whole arc.
+- **`glass.aberration`** — chromatic aberration. Red samples at `1 + a` of the displacement, blue at `1 − a`. Keep it subtle: on high-contrast edges large values read as magenta fringes.
+- **`glass.axisStrength.y`** — vertical damping of the displacement on the flat edges. The lens is taller than the track, so its top/bottom rim sits right on the 1px track border; without damping that line smears into thick bands.
+- **`glass.specularOpacity`** — opacity of the rim light hugging the lens edge.
+- **`physics.attraction`** — fraction of the remaining distance the thumb covers per frame. Higher = snappier settle.
+- **`physics.wobble`** — squash & stretch while the thumb moves. Cheap here (a GPU transform of a composited canvas); this is the animation SVG-filter implementations must disable.
+- **`appearance.color`** — accent color: the thumb ring, and the fallback for `textColor` / `borderColor` when they are not set.
+- **`appearance.textColor`** / **`appearance.borderColor`** — override the label and track-border colors independently. The lens picks them up automatically because it refracts the redrawn track texture.

@@ -1,0 +1,69 @@
+{
+  "name": "@zeroqs/liquid-toggle",
+  "version": "0.1.0",
+  "description": "Liquid-glass segmented toggle for React. The lens is a WebGL shader over a canvas copy of the track — no backdrop-filter, works in every browser.",
+  "keywords": [
+    "canvas",
+    "glass",
+    "liquid-glass",
+    "react",
+    "refraction",
+    "segmented-control",
+    "toggle",
+    "ui",
+    "webgl"
+  ],
+  "homepage": "https://github.com/zeroqs/liquid-toggle#readme",
+  "bugs": {
+    "url": "https://github.com/zeroqs/liquid-toggle/issues"
+  },
+  "license": "MIT",
+  "author": "zeroqs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeroqs/liquid-toggle.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build",
+    "prepare": "vp config"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20260509.2",
+    "bumpp": "^11.1.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "typescript": "^6.0.3",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.10.0",
+      "onFail": "download"
+    }
+  }
+}

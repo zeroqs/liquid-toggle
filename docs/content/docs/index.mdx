@@ -1,0 +1,59 @@
+---
+title: How it works
+description: A liquid-glass toggle without backdrop-filter — a WebGL lens over a canvas copy of the track.
+---
+
+## The problem with liquid glass on the web
+
+Native Liquid Glass (iOS/macOS) is a fragment shader in the compositor: it reads the pixels _behind_ the glass at displaced coordinates. The web has no such API — a shader can't sample the page. The usual workaround is `backdrop-filter: url(#svg)` with `feDisplacementMap`, and it comes with a tax:
+
+- **Chromium-only.** Safari and Firefox parse the declaration and silently drop it.
+- **CPU-built displacement maps.** Refraction can't be expressed parametrically in an SVG filter, so you ray-trace it in JS into an `ImageData`, encode it to a base64 PNG, and feed it to `feImage`. Every geometry change repeats the whole pipeline.
+- **Per-frame re-rasterization.** Scaling the element (squash & stretch — the best part of the effect) forces the browser to rebuild the filter surface every frame.
+
+## The canvas approach
+
+This library takes the honest route instead — but with a twist that keeps the DOM. The key observation: a segmented toggle's thumb slides over **its own track**, not over arbitrary page content. The track (pill, border, labels) is fully owned by the component, so it can be replicated pixel-for-pixel onto a canvas texture. Once the "background" is a texture, the original Apple recipe applies directly:
+
+1. **Track texture** — the pill background, border, separators and labels are drawn into an offscreen 2d canvas. The label font is read from the DOM with `getComputedStyle`, so the canvas copy matches the real labels exactly. A transparent margin around the pill prevents the WebGL sampler from clamping into the border color.
+
+2. **Lens** — the thumb is a `<canvas>` running a single-quad fragment shader:
+   - signed-distance field of the capsule → surface normal at each pixel;
+   - displacement toward the center, strongest at the rim (`strength`, falling off across `bezelWidth`);
+   - boosted along the rounded ends (`cornerBoost` / `cornerSpread`) so content visibly bends around the lens curve;
+   - three texture reads with slightly different offsets — chromatic aberration for the price of two extra samples;
+   - a rim light (`specularOpacity`, `lightAngle`).
+
+3. **Animation** — position, wobble and label fades live in refs and are flushed straight to the DOM and GL on each `requestAnimationFrame`. React does not re-render while the thumb moves. The only per-frame GPU cost is one `uniform2f` and one draw call over a ~200×60 quad — which is why squash & stretch is _enabled_ here, while `backdrop-filter` implementations have to turn it off.
+
+4. **Fallback** — if WebGL is unavailable, the thumb renders as a translucent frosted pill.
+
+The trade-off: the shader only refracts what it can sample. Labels must be plain strings (a canvas can't replicate arbitrary React nodes), and the track must stay opaque — the lens cannot show page content _through_ the toggle.
+
+## Quick start
+
+```tsx
+import { LiquidToggle } from "@zeroqs/liquid-toggle";
+
+function Tabs() {
+  const [tab, setTab] = useState("first");
+
+  return (
+    <LiquidToggle
+      value={tab}
+      onChange={setTab}
+      itemWidth={140}
+      options={[
+        { id: "first", label: "First" },
+        { id: "second", label: "Second" },
+      ]}
+      config={{
+        glass: { strength: 10 },
+        appearance: { color: "#7C3AED" },
+      }}
+    />
+  );
+}
+```
+
+Every knob is documented on the [Playground](/docs/playground) page — drag the sliders and watch the lens react live.
