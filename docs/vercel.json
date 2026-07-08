@@ -1,4 +1,4 @@
 {
-  "installCommand": "npm i -g pnpm@11.10.0 && pnpm install",
-  "buildCommand": "pnpm --filter @zeroqs/liquid-toggle build && next build"
+  "installCommand": "npx -y pnpm@11.10.0 install",
+  "buildCommand": "npx -y pnpm@11.10.0 --filter @zeroqs/liquid-toggle build && npx -y pnpm@11.10.0 run build"
 }
