@@ -13,7 +13,7 @@
     "ui",
     "webgl"
   ],
-  "homepage": "https://github.com/zeroqs/liquid-toggle#readme",
+  "homepage": "https://liquid-toggle.vercel.app/docs",
   "bugs": {
     "url": "https://github.com/zeroqs/liquid-toggle/issues"
   },
