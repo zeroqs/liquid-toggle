@@ -73,6 +73,12 @@ export interface LiquidToggleGlassConfig {
 /** Spring physics of the thumb and the squash & stretch animation. */
 export interface LiquidTogglePhysicsConfig {
   /**
+   * Master animation switch. When `false` the thumb snaps to the selected
+   * option instantly — no spring, no wobble, no label fades (dragging still
+   * follows the pointer). The glass lens itself stays fully functional.
+   */
+  animated: boolean;
+  /**
    * Enables squash & stretch ("wobble") while the thumb moves. The lens is a
    * GPU-composited canvas, so scaling it every frame is cheap — unlike SVG
    * backdrop filters, where the same animation forces per-frame re-rasterization.
@@ -182,6 +188,7 @@ export const LIQUID_TOGGLE_DEFAULT_CONFIG: LiquidToggleConfig = {
     lightAngle: Math.PI / 3,
   },
   physics: {
+    animated: true,
     wobble: true,
     attraction: 0.4,
     wobbleLerp: 0.2,

@@ -156,6 +156,27 @@ export function LiquidToggle({
   stepRef.current = () => {
     const { physics } = config;
 
+    if (!physics.animated) {
+      positionRef.current = targetRef.current;
+      wobbleXRef.current = 1;
+      wobbleYRef.current = 1;
+      const alphas = labelAlphasRef.current;
+      options.forEach((item, i) => {
+        const target =
+          item.id === internalValue
+            ? config.appearance.item.selectedOpacity
+            : config.appearance.item.unselectedOpacity;
+        if (alphas[i] !== target) {
+          alphas[i] = target;
+          textureDirtyRef.current = true;
+        }
+      });
+      applyTransform();
+      drawGlassRef.current?.();
+      frameRef.current = null;
+      return;
+    }
+
     const dest = targetRef.current;
     const prev = positionRef.current;
     const diff = dest - prev;
@@ -326,7 +347,7 @@ export function LiquidToggle({
       if (next < minPos) next = minPos - (minPos - next) / physics.edgeResistance;
       if (next > maxPos) next = maxPos + (next - maxPos) / physics.edgeResistance;
 
-      if (physics.wobble) {
+      if (physics.wobble && physics.animated) {
         const velocity = next - positionRef.current;
         const stretch =
           1 + Math.min(Math.abs(velocity) * physics.dragStretchPerSpeed, physics.dragMaxStretch);
@@ -509,7 +530,7 @@ export function LiquidToggle({
                     transform: `scale(${
                       isSelected ? appearance.item.selectedScale : appearance.item.unselectedScale
                     })`,
-                    transition: "opacity 0.15s, transform 0.15s",
+                    transition: config.physics.animated ? "opacity 0.15s, transform 0.15s" : "none",
                   }}
                 >
                   <span

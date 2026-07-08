@@ -83,6 +83,7 @@ interface PlaygroundState {
   axisY: number;
   specularOpacity: number;
   attraction: number;
+  animated: boolean;
   wobble: boolean;
   color: string;
   textColor: string;
@@ -99,6 +100,7 @@ const INITIAL: PlaygroundState = {
   axisY: DEFAULTS.glass.axisStrength.y,
   specularOpacity: DEFAULTS.glass.specularOpacity,
   attraction: DEFAULTS.physics.attraction,
+  animated: DEFAULTS.physics.animated,
   wobble: DEFAULTS.physics.wobble,
   color: DEFAULTS.appearance.color,
   textColor: DEFAULTS.appearance.textColor ?? DEFAULTS.appearance.color,
@@ -125,7 +127,7 @@ export function Playground() {
         axisStrength: { y: state.axisY },
         specularOpacity: state.specularOpacity,
       },
-      physics: { wobble: state.wobble, attraction: state.attraction },
+      physics: { animated: state.animated, wobble: state.wobble, attraction: state.attraction },
       appearance: {
         color: state.color,
         textColor: state.textColor,
@@ -213,6 +215,18 @@ export function Playground() {
             onChange={(e) => set("itemWidth", Number(e.target.value))}
           />
           <span className="text-xs text-fd-muted-foreground">Width of one option cell, px</span>
+        </label>
+
+        <label className="flex items-center gap-2 text-sm font-mono">
+          <input
+            type="checkbox"
+            checked={state.animated}
+            onChange={(e) => set("animated", e.target.checked)}
+          />
+          physics.animated
+          <span className="text-xs text-fd-muted-foreground font-sans">
+            off = the thumb snaps instantly
+          </span>
         </label>
 
         <label className="flex items-center gap-2 text-sm font-mono">
