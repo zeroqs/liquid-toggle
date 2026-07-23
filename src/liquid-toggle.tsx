@@ -14,6 +14,18 @@ import { resolveLiquidToggleConfig } from "./config.ts";
 import { GlassRenderer } from "./glass-renderer.ts";
 import { drawTrackTexture, TRACK_TEXTURE_PADDING } from "./track-texture.ts";
 
+/** Icon of an option — an image source, so the canvas copy of the track can draw it too. */
+export interface LiquidToggleIcon {
+  /** Image URL: PNG/WebP/SVG, a data URL, or a CORS-enabled remote source. */
+  src: string;
+  /** Rendered width, px. Defaults to `config.layout.iconSize`. */
+  width?: number;
+  /** Rendered height, px. Defaults to `config.layout.iconSize`. */
+  height?: number;
+  /** `alt` text of the DOM `<img>`. Defaults to `""` (decorative). */
+  alt?: string;
+}
+
 /** A single option of the toggle. */
 export interface LiquidToggleOption {
   /** Unique id, reported through `onChange`. */
@@ -23,6 +35,14 @@ export interface LiquidToggleOption {
    * the label, and arbitrary React nodes cannot be replicated on a canvas.
    */
   label: string;
+  /**
+   * Optional icon shown before the label — an image source, not a ReactNode,
+   * for the same reason the label is a string. Loaded with
+   * `crossOrigin="anonymous"`: a cross-origin source without CORS headers
+   * would taint the texture canvas and break the whole lens, so such icons
+   * (and any that fail to load) are skipped and the option renders label-only.
+   */
+  icon?: LiquidToggleIcon;
 }
 
 /** Props of {@link LiquidToggle}. */
@@ -88,6 +108,7 @@ export function LiquidToggle({
   );
 
   const optionsKey = useMemo(() => options.map((item) => item.id).join("|"), [options]);
+  const iconsKey = useMemo(() => options.map((item) => item.icon?.src ?? "").join("|"), [options]);
 
   // --- Animation state lives in refs and is flushed straight to the DOM /
   // WebGL, no setState per frame → no React re-renders while the thumb moves
@@ -109,6 +130,10 @@ export function LiquidToggle({
   const labelFontRef = useRef("500 12px sans-serif");
   const labelAlphasRef = useRef<Float32Array>(new Float32Array(0));
   const textureDirtyRef = useRef(true);
+  // src → decoded image; an option's icon renders (in DOM and canvas alike)
+  // only once its entry exists here, so the two layers never disagree
+  const iconImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const [, bumpIcons] = useState(0);
 
   const applyTransform = useCallback(() => {
     const el = thumbRef.current;
@@ -133,6 +158,16 @@ export function LiquidToggle({
           height: trackHeight,
           quality: config.glass.quality,
           labels: options.map((item) => item.label),
+          icons: options.map((item) => {
+            const image = item.icon && iconImagesRef.current.get(item.icon.src);
+            if (!item.icon || !image) return null;
+            return {
+              image,
+              width: item.icon.width ?? config.layout.iconSize,
+              height: item.icon.height ?? config.layout.iconSize,
+            };
+          }),
+          iconGap: config.layout.iconGap,
           alphas: labelAlphasRef.current,
           separator,
           font: labelFontRef.current,
@@ -312,6 +347,41 @@ export function LiquidToggle({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [optionsKey, sliderWidth, thumbWidth, thumbHeight, trackHeight, config]);
+
+  // Load option icons. Once an image decodes, the texture is rebuilt and the
+  // DOM re-renders; images that error out simply never appear (label-only).
+  useEffect(() => {
+    const images = iconImagesRef.current;
+    const wanted = new Set<string>();
+    for (const item of options) if (item.icon) wanted.add(item.icon.src);
+
+    for (const src of images.keys()) {
+      if (!wanted.has(src)) images.delete(src);
+    }
+
+    let cancelled = false;
+    wanted.forEach((src) => {
+      if (images.has(src)) return;
+      const img = new Image();
+      // Without CORS a cross-origin image would taint the texture canvas and
+      // texImage2D would throw, killing the whole lens — losing one icon is
+      // the better failure mode
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        if (cancelled) return;
+        images.set(src, img);
+        textureDirtyRef.current = true;
+        drawGlassRef.current?.();
+        bumpIcons((v) => v + 1);
+      };
+      img.src = src;
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [iconsKey]);
 
   useEffect(() => {
     if (selectedIndex === -1) return;
@@ -521,6 +591,7 @@ export function LiquidToggle({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    gap: config.layout.iconGap,
                     padding: "0 8px",
                     height: "100%",
                     overflow: "hidden",
@@ -533,6 +604,17 @@ export function LiquidToggle({
                     transition: config.physics.animated ? "opacity 0.15s, transform 0.15s" : "none",
                   }}
                 >
+                  {option.icon && iconImagesRef.current.has(option.icon.src) && (
+                    <img
+                      src={option.icon.src}
+                      crossOrigin="anonymous"
+                      alt={option.icon.alt ?? ""}
+                      width={option.icon.width ?? config.layout.iconSize}
+                      height={option.icon.height ?? config.layout.iconSize}
+                      draggable={false}
+                      style={{ display: "block", flexShrink: 0 }}
+                    />
+                  )}
                   <span
                     {...{ [LABEL_DATA_ATTR]: true }}
                     style={{

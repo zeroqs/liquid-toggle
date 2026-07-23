@@ -11,6 +11,6 @@ export type {
 export { GlassRenderer } from "./glass-renderer.ts";
 export type { GlassRendererParams } from "./glass-renderer.ts";
 export { LiquidToggle } from "./liquid-toggle.tsx";
-export type { LiquidToggleOption, LiquidToggleProps } from "./liquid-toggle.tsx";
+export type { LiquidToggleIcon, LiquidToggleOption, LiquidToggleProps } from "./liquid-toggle.tsx";
 export { drawTrackTexture, TRACK_TEXTURE_PADDING } from "./track-texture.ts";
-export type { TrackTextureOptions } from "./track-texture.ts";
+export type { TrackTextureIcon, TrackTextureOptions } from "./track-texture.ts";

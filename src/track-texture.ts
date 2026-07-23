@@ -5,6 +5,16 @@
  */
 export const TRACK_TEXTURE_PADDING = 24;
 
+/** A loaded, ready-to-draw icon of one option. */
+export interface TrackTextureIcon {
+  /** Decoded image (must not taint the canvas — see CORS notes in the README). */
+  image: CanvasImageSource;
+  /** Rendered width, CSS px. */
+  width: number;
+  /** Rendered height, CSS px. */
+  height: number;
+}
+
 /** Input for {@link drawTrackTexture}. */
 export interface TrackTextureOptions {
   /** Track width in CSS px (the backing canvas is `quality`× larger plus padding). */
@@ -15,6 +25,10 @@ export interface TrackTextureOptions {
   quality: number;
   /** Option labels, in order. */
   labels: string[];
+  /** Loaded icons aligned with `labels`; `null` = the option has no icon (or it failed to load). */
+  icons?: ReadonlyArray<TrackTextureIcon | null>;
+  /** Gap between an icon and its label, px. Must match the DOM flex `gap`. */
+  iconGap?: number;
   /** Current (animated) opacity per label — must match what the DOM shows. */
   alphas: ArrayLike<number>;
   /** Whether 1px separators are drawn between options. */
@@ -88,7 +102,18 @@ export function drawTrackTexture(
     ctx.beginPath();
     ctx.rect(left + 8, 0, itemWidth - 16, height);
     ctx.clip();
-    ctx.fillText(labels[i] ?? "", left + itemWidth / 2, height / 2 + 0.5);
+    const label = labels[i] ?? "";
+    const icon = options.icons?.[i] ?? null;
+    if (icon) {
+      // Center the icon + gap + label group, mirroring the DOM flex layout
+      const gap = options.iconGap ?? 0;
+      const groupLeft = left + (itemWidth - icon.width - gap - ctx.measureText(label).width) / 2;
+      ctx.drawImage(icon.image, groupLeft, (height - icon.height) / 2, icon.width, icon.height);
+      ctx.textAlign = "left";
+      ctx.fillText(label, groupLeft + icon.width + gap, height / 2 + 0.5);
+    } else {
+      ctx.fillText(label, left + itemWidth / 2, height / 2 + 0.5);
+    }
     ctx.restore();
   }
 

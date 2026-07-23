@@ -6,6 +6,10 @@ export interface LiquidToggleLayoutConfig {
   itemWidth: number;
   /** Font size of the option labels (any CSS value, e.g. `"12px"`). */
   fontSize: string;
+  /** Default icon size, px — used when an option's `icon` has no explicit `width`/`height`. */
+  iconSize: number;
+  /** Gap between an option's icon and its label, px. */
+  iconGap: number;
 }
 
 /** Geometry and idle transform of the sliding thumb (the glass lens). */
@@ -169,6 +173,8 @@ export const LIQUID_TOGGLE_DEFAULT_CONFIG: LiquidToggleConfig = {
     height: 44,
     itemWidth: 160,
     fontSize: "12px",
+    iconSize: 16,
+    iconGap: 6,
   },
   thumb: {
     height: 38,

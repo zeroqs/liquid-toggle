@@ -4,6 +4,29 @@ All notable changes to `@zeroqs/liquid-toggle` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Icons in options** — `LiquidToggleOption` accepts an optional `icon`
+  (an image source, so the canvas track texture can draw the exact same
+  icon and the lens refracts it like everything else):
+
+  ```tsx
+  options={[
+    { id: "objects", label: "Trade objects", icon: { src: "/icons/cube.svg" } },
+  ]}
+  ```
+
+  `width`/`height` default to the new `config.layout.iconSize` (16 px), the
+  gap before the label to `config.layout.iconGap` (6 px). PNG, WebP, SVG and
+  data URLs are supported; cross-origin sources need CORS headers. Icons that
+  fail to load fall back to label-only rendering. The texture rebuilds
+  automatically when an icon finishes decoding. Text-only options are
+  unchanged — no migration needed.
+
+- **Playground**: an `option.icon` checkbox to try icons live.
+
 ## [0.2.0] — 2026-07-08
 
 ### Added

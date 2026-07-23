@@ -6,6 +6,17 @@ import { useMemo, useState } from "react";
 
 const DEFAULTS = LIQUID_TOGGLE_DEFAULT_CONFIG;
 
+const svgIcon = (shape: string) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#1E6DF6" stroke-width="1.5">${shape}</svg>`,
+  )}`;
+
+const DEMO_ICONS = [
+  svgIcon('<circle cx="8" cy="8" r="6.5"/>'),
+  svgIcon('<rect x="1.75" y="1.75" width="12.5" height="12.5" rx="3.5"/>'),
+  svgIcon('<path d="M8 1.75 14.5 13.5h-13z" stroke-linejoin="round"/>'),
+];
+
 interface SliderSpec {
   key: string;
   label: string;
@@ -85,6 +96,7 @@ interface PlaygroundState {
   attraction: number;
   animated: boolean;
   wobble: boolean;
+  icons: boolean;
   color: string;
   textColor: string;
   borderColor: string;
@@ -102,6 +114,7 @@ const INITIAL: PlaygroundState = {
   attraction: DEFAULTS.physics.attraction,
   animated: DEFAULTS.physics.animated,
   wobble: DEFAULTS.physics.wobble,
+  icons: false,
   color: DEFAULTS.appearance.color,
   textColor: DEFAULTS.appearance.textColor ?? DEFAULTS.appearance.color,
   borderColor: DEFAULTS.appearance.borderColor ?? DEFAULTS.appearance.color,
@@ -155,7 +168,9 @@ export function Playground() {
             { id: "first", label: "First" },
             { id: "second", label: "Second" },
             { id: "third", label: "Third" },
-          ]}
+          ].map((option, i) =>
+            state.icons ? { ...option, icon: { src: DEMO_ICONS[i] } } : option,
+          )}
           config={config}
         />
       </div>
@@ -238,6 +253,18 @@ export function Playground() {
           physics.wobble
           <span className="text-xs text-fd-muted-foreground font-sans">
             squash &amp; stretch while moving
+          </span>
+        </label>
+
+        <label className="flex items-center gap-2 text-sm font-mono">
+          <input
+            type="checkbox"
+            checked={state.icons}
+            onChange={(e) => set("icons", e.target.checked)}
+          />
+          option.icon
+          <span className="text-xs text-fd-muted-foreground font-sans">
+            image icons before the labels — refracted by the lens too
           </span>
         </label>
 

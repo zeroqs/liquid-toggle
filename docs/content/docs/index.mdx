@@ -28,7 +28,7 @@ This library takes the honest route instead — but with a twist that keeps the 
 
 4. **Fallback** — if WebGL is unavailable, the thumb renders as a translucent frosted pill.
 
-The trade-off: the shader only refracts what it can sample. Labels must be plain strings (a canvas can't replicate arbitrary React nodes), and the track must stay opaque — the lens cannot show page content _through_ the toggle.
+The trade-off: the shader only refracts what it can sample. Labels must be plain strings and icons must be image sources (a canvas can't replicate arbitrary React nodes), and the track must stay opaque — the lens cannot show page content _through_ the toggle.
 
 ## Quick start
 
@@ -57,3 +57,22 @@ function Tabs() {
 ```
 
 Every knob is documented on the [Playground](/docs/playground) page — drag the sliders and watch the lens react live.
+
+## Icons
+
+An option can carry an icon before its label. It is an **image source**, not a ReactNode — that's what lets the canvas copy of the track draw the exact same icon, so the lens refracts it like everything else:
+
+```tsx
+options={[
+  {
+    id: "objects",
+    label: "Trade objects",
+    icon: { src: "/icons/cube.svg", width: 16, height: 16 },
+  },
+]}
+```
+
+- `width`/`height` default to `config.layout.iconSize` (16 px); the gap before the label is `config.layout.iconGap` (6 px).
+- PNG, WebP, SVG and data URLs all work. Cross-origin sources must send CORS headers (icons load with `crossOrigin="anonymous"`): a tainted canvas would break the whole lens texture, so a source without CORS — or one that fails to load — is skipped and the option gracefully renders label-only.
+- The track texture is supersampled (`glass.quality`, 2× by default), so prefer SVG — or a raster at least 2× the rendered size — to stay sharp on high-DPI screens.
+- The texture rebuilds automatically once an icon finishes decoding; options without icons are untouched.
