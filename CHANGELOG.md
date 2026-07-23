@@ -4,7 +4,30 @@ All notable changes to `@zeroqs/liquid-toggle` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] — 2026-07-23
+
+### Added
+
+- **`icon.position`** — place the icon on either side of the label
+  (`"left"` | `"right"`, defaults to `"left"`), mirrored exactly in the
+  canvas copy under the lens.
+
+- **`icon.color`** — tint: repaints every non-transparent pixel with the
+  given color, preserving alpha. Made for monochrome/`currentColor` SVGs,
+  which would otherwise render black inside an `<img>` or canvas:
+
+  ```tsx
+  icon: { src: "/icons/cube.svg", position: "right", color: "#1E6DF6" }
+  ```
+
+  The tinted copy is rasterized once (at the max of `glass.quality` and
+  `devicePixelRatio`, so it stays sharp on retina), cached, and shared by
+  the DOM `<img>` and the track texture — both layers show identical pixels.
+
+- **Playground**: `icon.position` and `icon.color` controls; an icons demo
+  on the "How it works" page.
+
+## [0.3.0] — 2026-07-23
 
 ### Added
 
@@ -20,20 +43,13 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
   `width`/`height` default to the new `config.layout.iconSize` (16 px), the
   gap before the label to `config.layout.iconGap` (6 px). PNG, WebP, SVG and
-  data URLs are supported; cross-origin sources need CORS headers. Icons that
-  fail to load fall back to label-only rendering. The texture rebuilds
-  automatically when an icon finishes decoding. Text-only options are
-  unchanged — no migration needed.
+  data URLs are supported; cross-origin sources need CORS headers (icons load
+  with `crossOrigin="anonymous"` — a tainted canvas would break the whole
+  lens texture). Icons that fail to load fall back to label-only rendering.
+  The texture rebuilds automatically when an icon finishes decoding.
+  Text-only options are unchanged — no migration needed.
 
-- **`icon.position`** — place the icon on either side of the label
-  (`"left"` | `"right"`, defaults to `"left"`).
-
-- **`icon.color`** — tint: repaints every non-transparent pixel with the
-  given color, preserving alpha. Made for monochrome/`currentColor` SVGs,
-  which would otherwise render black inside an `<img>` or canvas.
-
-- **Playground**: `option.icon`, `icon.position` and `icon.color` controls
-  to try icons live; an icons demo on the "How it works" page.
+- **Playground**: an `option.icon` checkbox to try icons live.
 
 ## [0.2.0] — 2026-07-08
 
@@ -91,6 +107,8 @@ Initial release. 🎉
 - **Graceful fallback**: if WebGL is unavailable, the toggle stays fully
   functional with a translucent thumb instead of the lens.
 
+[0.4.0]: https://github.com/zeroqs/liquid-toggle/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/zeroqs/liquid-toggle/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/zeroqs/liquid-toggle/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/zeroqs/liquid-toggle/releases/tag/v0.1.1
 [0.1.0]: https://www.npmjs.com/package/@zeroqs/liquid-toggle/v/0.1.0
