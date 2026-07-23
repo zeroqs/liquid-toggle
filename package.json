@@ -1,6 +1,6 @@
 {
   "name": "@zeroqs/liquid-toggle",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Liquid-glass segmented toggle for React. The lens is a WebGL shader over a canvas copy of the track — no backdrop-filter, works in every browser.",
   "keywords": [
     "canvas",
