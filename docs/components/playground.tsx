@@ -8,7 +8,7 @@ const DEFAULTS = LIQUID_TOGGLE_DEFAULT_CONFIG;
 
 const svgIcon = (shape: string) =>
   `data:image/svg+xml,${encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="#1E6DF6" stroke-width="1.5">${shape}</svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">${shape}</svg>`,
   )}`;
 
 const DEMO_ICONS = [
@@ -97,6 +97,8 @@ interface PlaygroundState {
   animated: boolean;
   wobble: boolean;
   icons: boolean;
+  iconPosition: "left" | "right";
+  iconColor: string;
   color: string;
   textColor: string;
   borderColor: string;
@@ -115,6 +117,8 @@ const INITIAL: PlaygroundState = {
   animated: DEFAULTS.physics.animated,
   wobble: DEFAULTS.physics.wobble,
   icons: false,
+  iconPosition: "left",
+  iconColor: "#1E6DF6",
   color: DEFAULTS.appearance.color,
   textColor: DEFAULTS.appearance.textColor ?? DEFAULTS.appearance.color,
   borderColor: DEFAULTS.appearance.borderColor ?? DEFAULTS.appearance.color,
@@ -169,7 +173,16 @@ export function Playground() {
             { id: "second", label: "Second" },
             { id: "third", label: "Third" },
           ].map((option, i) =>
-            state.icons ? { ...option, icon: { src: DEMO_ICONS[i] } } : option,
+            state.icons
+              ? {
+                  ...option,
+                  icon: {
+                    src: DEMO_ICONS[i],
+                    position: state.iconPosition,
+                    color: state.iconColor,
+                  },
+                }
+              : option,
           )}
           config={config}
         />
@@ -265,6 +278,35 @@ export function Playground() {
           option.icon
           <span className="text-xs text-fd-muted-foreground font-sans">
             image icons before the labels — refracted by the lens too
+          </span>
+        </label>
+
+        <label className="flex items-center gap-2 text-sm font-mono">
+          <select
+            className="rounded-md border bg-transparent px-1 py-0.5 text-xs"
+            value={state.iconPosition}
+            onChange={(e) => set("iconPosition", e.target.value as "left" | "right")}
+            disabled={!state.icons}
+          >
+            <option value="left">left</option>
+            <option value="right">right</option>
+          </select>
+          icon.position
+          <span className="text-xs text-fd-muted-foreground font-sans">
+            which side of the label
+          </span>
+        </label>
+
+        <label className="flex items-center gap-2 text-sm font-mono">
+          <input
+            type="color"
+            value={state.iconColor}
+            onChange={(e) => set("iconColor", e.target.value)}
+            disabled={!state.icons}
+          />
+          icon.color
+          <span className="text-xs text-fd-muted-foreground font-sans">
+            tint — makes currentColor SVGs follow the theme
           </span>
         </label>
 

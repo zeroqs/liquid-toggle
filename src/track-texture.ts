@@ -13,6 +13,8 @@ export interface TrackTextureIcon {
   width: number;
   /** Rendered height, CSS px. */
   height: number;
+  /** Which side of the label the icon sits on. Defaults to `"left"`. */
+  position?: "left" | "right";
 }
 
 /** Input for {@link drawTrackTexture}. */
@@ -107,10 +109,13 @@ export function drawTrackTexture(
     if (icon) {
       // Center the icon + gap + label group, mirroring the DOM flex layout
       const gap = options.iconGap ?? 0;
-      const groupLeft = left + (itemWidth - icon.width - gap - ctx.measureText(label).width) / 2;
-      ctx.drawImage(icon.image, groupLeft, (height - icon.height) / 2, icon.width, icon.height);
+      const textWidth = ctx.measureText(label).width;
+      const groupLeft = left + (itemWidth - icon.width - gap - textWidth) / 2;
+      const iconLeft = icon.position === "right" ? groupLeft + textWidth + gap : groupLeft;
+      const textLeft = icon.position === "right" ? groupLeft : groupLeft + icon.width + gap;
+      ctx.drawImage(icon.image, iconLeft, (height - icon.height) / 2, icon.width, icon.height);
       ctx.textAlign = "left";
-      ctx.fillText(label, groupLeft + icon.width + gap, height / 2 + 0.5);
+      ctx.fillText(label, textLeft, height / 2 + 0.5);
     } else {
       ctx.fillText(label, left + itemWidth / 2, height / 2 + 0.5);
     }

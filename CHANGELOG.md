@@ -25,7 +25,15 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   automatically when an icon finishes decoding. Text-only options are
   unchanged — no migration needed.
 
-- **Playground**: an `option.icon` checkbox to try icons live.
+- **`icon.position`** — place the icon on either side of the label
+  (`"left"` | `"right"`, defaults to `"left"`).
+
+- **`icon.color`** — tint: repaints every non-transparent pixel with the
+  given color, preserving alpha. Made for monochrome/`currentColor` SVGs,
+  which would otherwise render black inside an `<img>` or canvas.
+
+- **Playground**: `option.icon`, `icon.position` and `icon.color` controls
+  to try icons live; an icons demo on the "How it works" page.
 
 ## [0.2.0] — 2026-07-08
 

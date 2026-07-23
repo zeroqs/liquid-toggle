@@ -22,6 +22,15 @@ export interface LiquidToggleIcon {
   width?: number;
   /** Rendered height, px. Defaults to `config.layout.iconSize`. */
   height?: number;
+  /** Which side of the label the icon sits on. Defaults to `"left"`. */
+  position?: "left" | "right";
+  /**
+   * Tint color. Replaces every non-transparent pixel with this color (the
+   * alpha channel is kept), so monochrome icons — including SVGs drawn with
+   * `currentColor`, which would otherwise render black — can follow the theme.
+   * Omit to keep the original colors of the image.
+   */
+  color?: string;
   /** `alt` text of the DOM `<img>`. Defaults to `""` (decorative). */
   alt?: string;
 }
@@ -133,7 +142,41 @@ export function LiquidToggle({
   // src → decoded image; an option's icon renders (in DOM and canvas alike)
   // only once its entry exists here, so the two layers never disagree
   const iconImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  // src|color|size → tinted copy, shared by the DOM (as a data URL) and the
+  // texture (as a canvas) so both layers show the exact same pixels
+  const tintCacheRef = useRef<Map<string, { image: HTMLCanvasElement; url: string }>>(new Map());
   const [, bumpIcons] = useState(0);
+
+  const resolveIcon = (
+    icon: LiquidToggleIcon,
+  ): { image: CanvasImageSource; url: string; width: number; height: number } | null => {
+    const raw = iconImagesRef.current.get(icon.src);
+    if (!raw) return null;
+    const width = icon.width ?? config.layout.iconSize;
+    const height = icon.height ?? config.layout.iconSize;
+    if (!icon.color) return { image: raw, url: icon.src, width, height };
+
+    const cache = tintCacheRef.current;
+    const key = `${icon.src}|${icon.color}|${width}x${height}`;
+    let entry = cache.get(key);
+    if (!entry) {
+      const dpr = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
+      const scale = Math.max(2, config.glass.quality, dpr);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return { image: raw, url: icon.src, width, height };
+      ctx.drawImage(raw, 0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = "source-in";
+      ctx.fillStyle = icon.color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (cache.size > 64) cache.clear();
+      entry = { image: canvas, url: canvas.toDataURL() };
+      cache.set(key, entry);
+    }
+    return { image: entry.image, url: entry.url, width, height };
+  };
 
   const applyTransform = useCallback(() => {
     const el = thumbRef.current;
@@ -159,12 +202,13 @@ export function LiquidToggle({
           quality: config.glass.quality,
           labels: options.map((item) => item.label),
           icons: options.map((item) => {
-            const image = item.icon && iconImagesRef.current.get(item.icon.src);
-            if (!item.icon || !image) return null;
+            const resolved = item.icon && resolveIcon(item.icon);
+            if (!item.icon || !resolved) return null;
             return {
-              image,
-              width: item.icon.width ?? config.layout.iconSize,
-              height: item.icon.height ?? config.layout.iconSize,
+              image: resolved.image,
+              width: resolved.width,
+              height: resolved.height,
+              position: item.icon.position ?? "left",
             };
           }),
           iconGap: config.layout.iconGap,
@@ -357,6 +401,10 @@ export function LiquidToggle({
 
     for (const src of images.keys()) {
       if (!wanted.has(src)) images.delete(src);
+    }
+    for (const key of tintCacheRef.current.keys()) {
+      const src = key.slice(0, key.lastIndexOf("|", key.lastIndexOf("|") - 1));
+      if (!wanted.has(src)) tintCacheRef.current.delete(key);
     }
 
     let cancelled = false;
@@ -572,6 +620,7 @@ export function LiquidToggle({
         >
           {options.map((option, index) => {
             const isSelected = internalValue === option.id;
+            const icon = option.icon ? resolveIcon(option.icon) : null;
             return (
               <Fragment key={option.id}>
                 {separator && index > 0 && (
@@ -604,15 +653,19 @@ export function LiquidToggle({
                     transition: config.physics.animated ? "opacity 0.15s, transform 0.15s" : "none",
                   }}
                 >
-                  {option.icon && iconImagesRef.current.has(option.icon.src) && (
+                  {option.icon && icon && (
                     <img
-                      src={option.icon.src}
+                      src={icon.url}
                       crossOrigin="anonymous"
                       alt={option.icon.alt ?? ""}
-                      width={option.icon.width ?? config.layout.iconSize}
-                      height={option.icon.height ?? config.layout.iconSize}
+                      width={icon.width}
+                      height={icon.height}
                       draggable={false}
-                      style={{ display: "block", flexShrink: 0 }}
+                      style={{
+                        display: "block",
+                        flexShrink: 0,
+                        order: option.icon.position === "right" ? 1 : 0,
+                      }}
                     />
                   )}
                   <span

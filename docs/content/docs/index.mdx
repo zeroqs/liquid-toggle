@@ -62,17 +62,26 @@ Every knob is documented on the [Playground](/docs/playground) page — drag the
 
 An option can carry an icon before its label. It is an **image source**, not a ReactNode — that's what lets the canvas copy of the track draw the exact same icon, so the lens refracts it like everything else:
 
+<IconsDemo />
+
 ```tsx
 options={[
   {
     id: "objects",
     label: "Trade objects",
-    icon: { src: "/icons/cube.svg", width: 16, height: 16 },
+    icon: {
+      src: "/icons/cube.svg",
+      width: 16,          // defaults to config.layout.iconSize
+      height: 16,
+      position: "left",   // or "right"
+      color: "#1E6DF6",   // tint — see below
+    },
   },
 ]}
 ```
 
-- `width`/`height` default to `config.layout.iconSize` (16 px); the gap before the label is `config.layout.iconGap` (6 px).
+- `width`/`height` default to `config.layout.iconSize` (16 px); the gap before the label is `config.layout.iconGap` (6 px); `position` places the icon on either side of the label.
+- `color` tints the icon: every non-transparent pixel is repainted with this color, alpha preserved. SVGs drawn with `currentColor` render **black** inside an `<img>`/canvas — there is no surrounding CSS `color` to inherit — so pass `color` to keep them in your theme. Omit it for full-color images (logos, emoji).
 - PNG, WebP, SVG and data URLs all work. Cross-origin sources must send CORS headers (icons load with `crossOrigin="anonymous"`): a tainted canvas would break the whole lens texture, so a source without CORS — or one that fails to load — is skipped and the option gracefully renders label-only.
 - The track texture is supersampled (`glass.quality`, 2× by default), so prefer SVG — or a raster at least 2× the rendered size — to stay sharp on high-DPI screens.
 - The texture rebuilds automatically once an icon finishes decoding; options without icons are untouched.

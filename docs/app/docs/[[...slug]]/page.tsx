@@ -1,3 +1,4 @@
+import { IconsDemo } from "@/components/icons-demo";
 import { Playground } from "@/components/playground";
 import { source } from "@/lib/source";
 import defaultMdxComponents from "fumadocs-ui/mdx";
@@ -16,7 +17,7 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, Playground }} />
+        <MDX components={{ ...defaultMdxComponents, IconsDemo, Playground }} />
       </DocsBody>
     </DocsPage>
   );
